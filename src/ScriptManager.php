@@ -10,6 +10,8 @@ class ScriptManager
     private ?string $compiledFile = null;
     private IFileDispatcher $fileDispatcher;
 
+    private array $ignoredFiles = [];
+
     public function __construct(?IFileDispatcher $fileDispatcher = null)
     {
         $this->scripts = [];
@@ -19,6 +21,22 @@ class ScriptManager
             $this->fileDispatcher = $fileDispatcher;
         }
     }
+
+
+    /**
+     * Add script file to ignore array - to skip it when collect data from directory (look ::addDir() method)
+     * Files, passed to ::setCompiledFile() will add to ignored automatically, they do not need to be added manually by this method
+     * @param string|string[] $scripts file of files to ignore
+     */
+    public function addIgnoreFile($scripts): void
+    {
+        if (gettype($scripts) === 'string') {
+            $scripts = [$scripts];
+        }
+        $this->ignoredFiles = array_merge($this->ignoredFiles, $scripts);
+    }
+
+
 
     /**
      * Add script file or script files array to manager
@@ -45,15 +63,18 @@ class ScriptManager
     }
 
     /**
+     * Sets the file where all scripts will be collected
+     * Files, passed to this method will automatically add to ignored, they do not need to be added manually by ::addIgnoreFile()
      * @param string $compiledFile filename of compiled scripts
      */
     public function setCompiledFile(string $compiledFile): void
     {
         $this->compiledFile = $compiledFile;
+        $this->ignoredFiles[] = $compiledFile;
     }
 
     /**
-     * Add all script files from directory
+     * Add all script files from directory, except files added by ::ignore() method
      * @param string $scriptsDir
      * @throws Exception
      */
@@ -66,13 +87,13 @@ class ScriptManager
         foreach($files as $entry) {
             if (strlen($entry) < 3) continue;
             if (substr($entry, -2) !== 'js') continue;
-            if ($scriptsDir . '/' . $entry === $this->compiledFile) continue;
+            if (in_array($scriptsDir . '/' . $entry, $this->ignoredFiles)) continue;
             $this->scripts[] = ['file' => $scriptsDir . '/' . $entry, 'compile' => true];
         }
     }
 
     /**
-     * Return script array
+     * Return script files array
      * @return array
      * @throws Exception
      */
@@ -110,8 +131,13 @@ class ScriptManager
     }
 
 
-
-    public function getRefs($DOCUMENT_ROOT = null): array
+    /**
+     * Return scripts path array
+     * @param ?string $DOCUMENT_ROOT Full path to site. If null, will be set to $_SERVER['DOCUMENT_ROOT']
+     * @return array
+     * @throws Exception
+     */
+    public function getRefs(?string $DOCUMENT_ROOT = null): array
     {
         if ($DOCUMENT_ROOT === null) {
             if (!isset($_SERVER)) throw new Exception("Method ::getRefs without parameters used only in web environment");
@@ -167,10 +193,12 @@ class ScriptManager
         // TODO Add mtime check??
 
         // Save compiled file
-        if ($this->fileDispatcher->isFile($this->compiledFile)) {
-            $this->fileDispatcher->unlink($this->compiledFile);
+        if (strlen($jsContent) !== 0) {
+            if ($this->fileDispatcher->isFile($this->compiledFile)) {
+                $this->fileDispatcher->unlink($this->compiledFile);
+            }
+            $this->fileDispatcher->save($this->compiledFile, $jsContent);
         }
 
-        $this->fileDispatcher->save($this->compiledFile, $jsContent);
     }
 }

@@ -10,6 +10,7 @@ class StyleManager
 {
     private array $styles;
     private IFileDispatcher $fileDispatcher;
+    private bool $needSitemap = true;
 
     public function __construct(?IFileDispatcher $fileDispatcher = null)
     {
@@ -20,6 +21,23 @@ class StyleManager
             $this->fileDispatcher = $fileDispatcher;
         }
     }
+
+    /**
+     * Enable inline sitemap for SCSS
+     */
+    public function enableSitemap()
+    {
+        $this->needSitemap = true;
+    }
+
+    /**
+     * Disable inline sitemap for SCSS
+     */
+    public function disableSitemap()
+    {
+        $this->needSitemap = false;
+    }
+
 
     /**
      * Add CSS or SCSS file to list
@@ -38,18 +56,12 @@ class StyleManager
         }
     }
 
-    private function checkDocumentRoot(?string $DOCUMENT_ROOT = null): string
-    {
-        if ($DOCUMENT_ROOT === null) {
-            if (!isset($_SERVER)) throw new Exception("Method ::getRefs without parameters used only in web environment");
-            if (!isset($_SERVER['DOCUMENT_ROOT'])) throw new Exception("Method ::getRefs without parameters used only in web environment");
-            $DOCUMENT_ROOT = $_SERVER['DOCUMENT_ROOT'];
-        }
-        return $DOCUMENT_ROOT;
-    }
 
-
-
+    /**
+     * Return style files array
+     * @return array
+     * @throws Exception
+     */
     public function get(?string $DOCUMENT_ROOT = null): array
     {
         $DOCUMENT_ROOT = $this->checkDocumentRoot($DOCUMENT_ROOT);
@@ -57,7 +69,12 @@ class StyleManager
         return $this->styles;
     }
 
-
+    /**
+     * Return styles path array
+     * @param ?string $DOCUMENT_ROOT Full path to site. If null, will be set to $_SERVER['DOCUMENT_ROOT']
+     * @return array
+     * @throws Exception
+     */
     public function getRefs(?string $DOCUMENT_ROOT = null): array
     {
         $DOCUMENT_ROOT = $this->checkDocumentRoot($DOCUMENT_ROOT);
@@ -72,6 +89,17 @@ class StyleManager
             }
         }
         return $data;
+    }
+
+
+    private function checkDocumentRoot(?string $DOCUMENT_ROOT = null): string
+    {
+        if ($DOCUMENT_ROOT === null) {
+            if (!isset($_SERVER)) throw new Exception("Method ::getRefs without parameters used only in web environment");
+            if (!isset($_SERVER['DOCUMENT_ROOT'])) throw new Exception("Method ::getRefs without parameters used only in web environment");
+            $DOCUMENT_ROOT = $_SERVER['DOCUMENT_ROOT'];
+        }
+        return $DOCUMENT_ROOT;
     }
 
 
@@ -91,7 +119,7 @@ class StyleManager
                 $scss = new Compiler();
                 $scss->addImportPath(dirname($scssFile));
                 $scss->setOutputStyle(OutputStyle::COMPRESSED);
-                $scss->setSourceMap(Compiler::SOURCE_MAP_INLINE);
+                if ($this->needSitemap) $scss->setSourceMap(Compiler::SOURCE_MAP_INLINE);
                 $scss->setSourceMapOptions([
                     'sourceMapWriteTo'  => "{$dirname}/{$basename}.map",
                     'sourceMapURL'      => substr("{$dirname}/{$basename}.map", strlen($DOCUMENT_ROOT)),
@@ -101,16 +129,19 @@ class StyleManager
                 ]);
                 $scssContent = $this->fileDispatcher->read($scssFile);
                 $style = $scss->compileString($scssContent, $scssFile);
+
                 if ($this->fileDispatcher->isFile("{$dirname}/{$basename}.min.css")) {
                     $this->fileDispatcher->unlink("{$dirname}/{$basename}.min.css");
                 }
-                $this->fileDispatcher->save("{$dirname}/{$basename}.min.css", $style->getCss());
-                $data[] = "{$dirname}/{$basename}.min.css";
+
+                if (strlen($style->getCss()) !== 0) {
+                    $this->fileDispatcher->save("{$dirname}/{$basename}.min.css", $style->getCss());
+                    $data[] = "{$dirname}/{$basename}.min.css";
+                }
             } else {
                 $data[] = $style;
             }
         }
-
         $this->styles = $data;
     }
 }
