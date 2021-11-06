@@ -154,12 +154,12 @@ $assets->styles()->addFile("https://example.com/libs/external_css_file.css");
 
 
 /**
-Disable inline sitemap generation (for prod environment for example)
+Disable inline sourcemap generation (for prod environment for example)
 */
 $assets->styles()->enableSourcemap();
 
 /**
-Enable inline sitemap generation
+Enable inline sourcemap generation
 */
 $assets->styles()->enableSourcemap();
 
