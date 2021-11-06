@@ -10,7 +10,7 @@ class StyleManager
 {
     private array $styles;
     private IFileDispatcher $fileDispatcher;
-    private bool $needSitemap = true;
+    private bool $needSourcemap = true;
 
     public function __construct(?IFileDispatcher $fileDispatcher = null)
     {
@@ -23,19 +23,19 @@ class StyleManager
     }
 
     /**
-     * Enable inline sitemap for SCSS
+     * Enable inline sourcemap for SCSS
      */
-    public function enableSitemap()
+    public function enableSourcemap()
     {
-        $this->needSitemap = true;
+        $this->needSourcemap = true;
     }
 
     /**
-     * Disable inline sitemap for SCSS
+     * Disable inline sourcemap for SCSS
      */
-    public function disableSitemap()
+    public function disableSourcemap()
     {
-        $this->needSitemap = false;
+        $this->needSourcemap = false;
     }
 
 
@@ -59,6 +59,7 @@ class StyleManager
 
     /**
      * Return style files array
+     * @param string|null $DOCUMENT_ROOT
      * @return array
      * @throws Exception
      */
@@ -119,7 +120,7 @@ class StyleManager
                 $scss = new Compiler();
                 $scss->addImportPath(dirname($scssFile));
                 $scss->setOutputStyle(OutputStyle::COMPRESSED);
-                if ($this->needSitemap) $scss->setSourceMap(Compiler::SOURCE_MAP_INLINE);
+                if ($this->needSourcemap) $scss->setSourceMap(Compiler::SOURCE_MAP_INLINE);
                 $scss->setSourceMapOptions([
                     'sourceMapWriteTo'  => "{$dirname}/{$basename}.map",
                     'sourceMapURL'      => substr("{$dirname}/{$basename}.map", strlen($DOCUMENT_ROOT)),

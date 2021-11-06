@@ -1,8 +1,19 @@
 {
   "name": "flexycms/asset-manager",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Small assets manager",
-  "license": "proprietary",
+  "license": "BSD-3-Clause",
+  "homepage": "https://github.com/Khorsa/asset-manager",
+  "authors": [
+    {
+      "name": "Roman Stolyarov",
+      "email": "rshome@mail.ru",
+      "role": "lead"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/Khorsa/asset-manager/issues"
+  },
 
   "autoload": {
     "psr-4": {
