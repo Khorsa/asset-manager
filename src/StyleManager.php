@@ -4,6 +4,7 @@ namespace Flexycms\AssetManager;
 
 use Exception;
 use ScssPhp\ScssPhp\Compiler;
+use ScssPhp\ScssPhp\Exception\SassException;
 use ScssPhp\ScssPhp\OutputStyle;
 
 class StyleManager
@@ -12,14 +13,10 @@ class StyleManager
     private IFileDispatcher $fileDispatcher;
     private bool $needSourcemap = true;
 
-    public function __construct(?IFileDispatcher $fileDispatcher = null)
+    public function __construct(IFileDispatcher $fileDispatcher)
     {
         $this->styles = [];
-        if ($fileDispatcher === null) {
-            $this->fileDispatcher = new FileDispatcher();
-        } else {
-            $this->fileDispatcher = $fileDispatcher;
-        }
+        $this->fileDispatcher = $fileDispatcher;
     }
 
     /**
@@ -36,6 +33,15 @@ class StyleManager
     public function disableSourcemap()
     {
         $this->needSourcemap = false;
+    }
+
+    /**
+     * Return true if sourcemap enabled
+     * @return bool
+     */
+    public function isSourcemapEnabled(): bool
+    {
+        return $this->needSourcemap;
     }
 
 
@@ -62,6 +68,7 @@ class StyleManager
      * @param string|null $DOCUMENT_ROOT
      * @return array
      * @throws Exception
+     * @throws SassException
      */
     public function get(?string $DOCUMENT_ROOT = null): array
     {
@@ -75,6 +82,7 @@ class StyleManager
      * @param ?string $DOCUMENT_ROOT Full path to site. If null, will be set to $_SERVER['DOCUMENT_ROOT']
      * @return array
      * @throws Exception
+     * @throws SassException
      */
     public function getRefs(?string $DOCUMENT_ROOT = null): array
     {
@@ -93,6 +101,11 @@ class StyleManager
     }
 
 
+    /**
+     * @param string|null $DOCUMENT_ROOT
+     * @return string
+     * @throws Exception
+     */
     private function checkDocumentRoot(?string $DOCUMENT_ROOT = null): string
     {
         if ($DOCUMENT_ROOT === null) {
@@ -104,6 +117,11 @@ class StyleManager
     }
 
 
+    /**
+     * @param string|null $DOCUMENT_ROOT
+     * @throws SassException
+     * @throws Exception
+     */
     private function compile(?string $DOCUMENT_ROOT = null): void
     {
         $DOCUMENT_ROOT = $this->checkDocumentRoot($DOCUMENT_ROOT);

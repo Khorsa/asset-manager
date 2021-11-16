@@ -9,8 +9,10 @@ class AssetManager
 
     public function __construct()
     {
-        $this->scriptManager = new ScriptManager();
-        $this->styleManager = new StyleManager();
+        $fileDispatcher = new FileDispatcher();
+        $jsCompressor = new JsCompressor();
+        $this->scriptManager = new ScriptManager($fileDispatcher, $jsCompressor);
+        $this->styleManager = new StyleManager($fileDispatcher);
     }
 
     /**

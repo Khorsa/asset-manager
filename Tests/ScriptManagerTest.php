@@ -21,7 +21,9 @@ class ScriptManagerTest extends TestCase
             ->method('readDir')
             ->willReturn(['file1.js', 'file2.js', 'file3.php', 'compiled.js']);
 
-        $this->manager = new ScriptManager($mock);
+        $jsCompressor = new JsCompressor();
+
+        $this->manager = new ScriptManager($mock, $jsCompressor);
     }
 
 
@@ -38,7 +40,6 @@ class ScriptManagerTest extends TestCase
         $this->manager->addFile("test", false);
     }
 
-
     public function testAddFile()
     {
         $this->manager->setCompiledFile("compiled.js");
@@ -49,7 +50,6 @@ class ScriptManagerTest extends TestCase
         $this->assertEquals('test0.js', $data[0]);
     }
 
-
     public function testAddDir()
     {
         $this->manager->setCompiledFile("dir/compiled.js");
@@ -59,6 +59,4 @@ class ScriptManagerTest extends TestCase
         $this->assertEquals(1, count($data));
         $this->assertEquals('dir/compiled.js', $data[0]);
     }
-
-
 }

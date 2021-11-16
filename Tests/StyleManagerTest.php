@@ -37,4 +37,18 @@ class StyleManagerTest extends TestCase
         $this->assertEquals(1, count($data));
         $this->assertEquals('test0.css', $data[0]);
     }
+
+    public function testEnableSourcemap()
+    {
+        $this->manager->enableSourcemap();
+        $this->assertEquals(true, $this->manager->isSourcemapEnabled());
+    }
+    public function testDisableSourcemap()
+    {
+        $this->manager->disableSourcemap();
+        $this->assertEquals(false, $this->manager->isSourcemapEnabled());
+    }
+
+
+
 }

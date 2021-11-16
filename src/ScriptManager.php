@@ -9,17 +9,15 @@ class ScriptManager
     private array $scripts;
     private ?string $compiledFile = null;
     private IFileDispatcher $fileDispatcher;
+    private IJsCompressor $jsCompressor;
 
     private array $ignoredFiles = [];
 
-    public function __construct(?IFileDispatcher $fileDispatcher = null)
+    public function __construct(IFileDispatcher $fileDispatcher, IJsCompressor $jsCompressor)
     {
         $this->scripts = [];
-        if ($fileDispatcher === null) {
-            $this->fileDispatcher = new FileDispatcher();
-        } else {
-            $this->fileDispatcher = $fileDispatcher;
-        }
+        $this->fileDispatcher = $fileDispatcher;
+        $this->jsCompressor = $jsCompressor;
     }
 
 
@@ -35,7 +33,6 @@ class ScriptManager
         }
         $this->ignoredFiles = array_merge($this->ignoredFiles, $scripts);
     }
-
 
 
     /**
@@ -176,22 +173,9 @@ class ScriptManager
             }
         }
 
-        // Remove comments
-        $pattern = '/(?:(?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:(?<!\:|\\\|\'|\")\/\/.*))/';
-        $jsContent = preg_replace($pattern, '', $jsContent);
-
-        // Remove double EOF
-        $jsContent = str_replace("\r\n", PHP_EOL, $jsContent);
-        for($i = 0; $i < 25; $i++) {
-            $jsContent = str_replace(PHP_EOL.PHP_EOL, PHP_EOL, $jsContent);
-            $jsContent = str_replace(PHP_EOL . "  ", PHP_EOL, $jsContent);
-        }
-        if (substr($jsContent, 0, strlen(PHP_EOL)) === PHP_EOL) {
-            $jsContent = substr($jsContent, strlen(PHP_EOL));
-        }
+        $jsContent = $this->jsCompressor->compress($jsContent);
 
         // TODO Add mtime check??
-
         // Save compiled file
         if (strlen($jsContent) !== 0) {
             if ($this->fileDispatcher->isFile($this->compiledFile)) {
@@ -199,6 +183,5 @@ class ScriptManager
             }
             $this->fileDispatcher->save($this->compiledFile, $jsContent);
         }
-
     }
 }
