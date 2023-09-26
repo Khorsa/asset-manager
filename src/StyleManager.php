@@ -22,7 +22,7 @@ class StyleManager
     /**
      * Enable inline sourcemap for SCSS
      */
-    public function enableSourcemap()
+    public function enableSourcemap(): void
     {
         $this->needSourcemap = true;
     }
@@ -30,7 +30,7 @@ class StyleManager
     /**
      * Disable inline sourcemap for SCSS
      */
-    public function disableSourcemap()
+    public function disableSourcemap(): void
     {
         $this->needSourcemap = false;
     }
@@ -49,7 +49,7 @@ class StyleManager
      * Add CSS or SCSS file to list
      * @param string|string[] $styles
      */
-    public function addFile($styles)
+    public function addFile($styles): void
     {
         if (gettype($styles) === 'string') {
             $styles = [$styles];

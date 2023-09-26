@@ -41,7 +41,7 @@ class ScriptManager
      * @param bool $compile is added scripts need to be compiled
      * @throws Exception
      */
-    public function addFile($scripts, $compile = true)
+    public function addFile($scripts, $compile = true): void
     {
         $this->checkCompiledFile();
         if (gettype($scripts) === 'string') {
@@ -75,7 +75,7 @@ class ScriptManager
      * @param string $scriptsDir
      * @throws Exception
      */
-    public function addDir(string $scriptsDir)
+    public function addDir(string $scriptsDir): void
     {
         $this->checkCompiledFile();
 
@@ -159,11 +159,12 @@ class ScriptManager
     /**
      * @throws Exception
      */
-    private function checkCompiledFile() {
+    private function checkCompiledFile(): void
+    {
         if ($this->compiledFile === null) throw new Exception("You must call ::setCompiledFile before work with scripts");
     }
 
-    private function compile()
+    private function compile(): void
     {
         // Collect js data
         $jsContent = '';
