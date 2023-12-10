@@ -22,7 +22,7 @@
   },
 
   "require": {
-    "php": "^7.4",
+    "php": ">7.4",
     "scssphp/scssphp": "^1.4"
   },
   "require-dev": {
